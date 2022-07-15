@@ -50,18 +50,35 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String? _date;
-
-  // конструктор для инициализации значения
-  _MyHomePageState(){
+  // меняем конструктор на переопределенный метод initState, так как на момент инициализация значения
+  // конструктор хоть и вызван, но сам виджет в дереве еще не существует
+  @override
+  void initState(){
+    super.initState();
     _getData();
   }
+
   // приватный ассихронный метод получения текущего московского времени
   void _getData() async{
+    //обнуление переменной, чтобы запустить индикатор процесса
+    setState(() {
+      _date = null;
+    });
     var dio = Dio();
     final response = await dio.get('http://worldtimeapi.org/api/timezone/Europe/Moscow');
     setState(() {
       _date = response.data['datetime'];
     });
+  }
+  // метод, возвращающий виджет, который показывает кольцевой индикатор загрузки (без значений)
+  Widget circularProgress() {
+    return const Center(
+      child: SizedBox(
+        child: CircularProgressIndicator(),
+        width: 60,
+        height: 60,
+      ),
+    );
   }
 
   @override
@@ -101,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
             const Text(
               'Текущее время:',
             ),
-
+            _date == null ? circularProgress():
             Text(
               '$_date',
               style: const TextStyle(fontSize: 16),
